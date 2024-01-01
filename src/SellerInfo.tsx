@@ -1,6 +1,9 @@
+import axios from 'axios';
 import * as React from 'react';
 import Box from '@mui/material/Box';
+import { baseURL } from "./APIconfig.ts";
 import { Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Close';
@@ -22,33 +25,70 @@ const initialRows: GridRowsProp = [
     {
         id: randomId(),
         information: "Name",
-        info_value: "Example name",
     },
     {
         id: randomId(),
         information: "Phone Number",
-        info_value: "0123456789",
     },
     {
         id: randomId(),
         information: "Email",
-        info_value: "example@gmail.com",
     },
     {
         id: randomId(),
         information: "Address",
-        info_value: "Example address",
     },
     {
         id: randomId(),
         information: "Description",
-        info_value: "This is an example description",
     }
 ];
 
-export default function SellerInfomation() {
-    const [rows, setRows] = React.useState(initialRows);
+let newData: { [key: string]: any } = {
+    email: null,
+    password: "calvinshop", // TODO: change this
+    name: null,
+    phoneNumber: null,
+    address: null,
+    description: null,
+    avatar: null,
+    background: null,
+    createrId: null,
+    deleterId: null,
+    deleted: false,
+}
+
+export default function SellerInformation() {
+
+    const [rows, setRows] = useState(initialRows);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+
+    useEffect(() => {
+        axios
+            .get(baseURL + "shop/1013f7a0-0017-4c21-872f-c014914e6834", {})
+            .then((response) => {
+                let info = response.data;
+                initialRows[0].info_value = info.name;
+                initialRows[1].info_value = info.phoneNumber;
+                initialRows[2].info_value = info.email;
+                initialRows[3].info_value = info.address;
+                initialRows[4].info_value = info.description;
+
+                newData.email = info.email;
+                newData.name = info.name;
+                newData.phoneNumber = info.phoneNumber;
+                newData.address = info.address;
+                newData.description = info.description;
+                newData.avatar = info.avatar;
+                newData.background = info.background;
+                newData.createrId = info.createrId;
+                newData.deleterId = info.deleterId;
+                newData.deleted = info.deleted;
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    });
 
     const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
         if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -79,6 +119,46 @@ export default function SellerInfomation() {
     const processRowUpdate = (newRow: GridRowModel) => {
         const updatedRow = { ...newRow, isNew: false };
         setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+
+        switch (newRow.information) {
+            case "Name":
+                newData.name = newRow.info_value;
+                break;
+            case "Phone Number":
+                newData.phoneNumber = newRow.info_value;
+                break;
+            case "Email":
+                newData.email = newRow.info_value;
+                break;
+            case "Address":
+                newData.address = newRow.info_value;
+                break;
+            case "Description":
+                newData.description = newRow.info_value;
+                break;
+        }
+
+        axios
+            .put(baseURL + "shop/1013f7a0-0017-4c21-872f-c014914e6834", {
+                email: newData.email,
+                password: newData.password,
+                name: newData.name,
+                phoneNumber: newData.phoneNumber,
+                address: newData.address,
+                description: newData.description,
+                avatar: newData.avatar,
+                background: newData.background,
+                createrId: newData.createrId,
+                deleterId: newData.deleterId,
+                deleted: newData.deleted,
+            })
+            .then((response) => {
+                console.log(response.data);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
         return updatedRow;
     };
 
@@ -158,7 +238,7 @@ export default function SellerInfomation() {
             }}
         >
             <Typography variant="h4">
-                Informations
+                Information
             </Typography>
             <DataGrid
                 rows={rows}
