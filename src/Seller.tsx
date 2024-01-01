@@ -1,5 +1,6 @@
 import SellerInformation from './SellerInfo'
-import SellerCoupon from './SellerCoupon'
+import SeasoningCoupon from './SeasoningCoupon'
+import ShippingCoupon from './ShippingCoupon'
 import SellerProduct from './SellerProduct'
 
 export default function Seller() {
@@ -7,7 +8,8 @@ export default function Seller() {
   return (
     <>
       <SellerInformation />
-      <SellerCoupon />
+      <SeasoningCoupon />
+      <ShippingCoupon />
       <SellerProduct />
       <br />
     </>

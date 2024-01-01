@@ -25,13 +25,12 @@ import {
 const initialRows: GridRowsProp = [
     {
         id: randomId(),
-        name: "Example Coupon 001",
+        name: "Shipping Coupon 001",
         deadline: new Date(),
-        image: "src/assets/testProductImg.jpg",
     },
     {
         id: randomId(),
-        name: "Example Coupon 002",
+        name: "Shipping Coupon 002",
         deadline: new Date(),
     },
 ];
@@ -64,7 +63,7 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
-export default function SellerCoupon() {
+export default function SeasoningCoupon() {
     const [rows, setRows] = React.useState(initialRows);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 
@@ -163,16 +162,6 @@ export default function SellerCoupon() {
             flex: 1,
         },
         {
-            field: 'couponType',
-            headerName: 'Type of Coupon',
-            width: 150,
-            headerAlign: "center",
-            align: "center",
-            editable: true,
-            type: 'singleSelect',
-            valueOptions: ['免運卷', '商品折價卷'],
-        },
-        {
             field: 'discount',
             headerName: 'Discount',
             width: 150,
@@ -180,40 +169,11 @@ export default function SellerCoupon() {
             type: 'number',
             headerAlign: "center",
             align: "center",
-            preProcessEditCellProps: (params) => {
-                const isPaidProps = params.otherFieldsProps!.couponType;
-
-                var value = params.props.value.toString();
-                if (value.includes("元")) {
-                    console.log("include 元")
-                    value = value.replaceAll("元", "");
+            valueFormatter(params) {
+                if (params.value === undefined) {
+                    params.value = 0;
                 }
-                if (value.includes("%")) {
-                    console.log("include %")
-                    value = value.replaceAll("%", "");
-                }
-                if (isPaidProps.value == '免運卷') {
-                    return { ...params.props, value: `${value}` };
-                } else if (isPaidProps.value === '商品折價卷') {
-                    return { ...params.props, value: `${value}` };
-                }
-                return { ...params.props, value: "Undefine" };
-            },
-            valueGetter(params) {
-                const isPaid = params.row.couponType;
-
-                if (isPaid === '免運卷') {
-                    if (params.value === "Undefine 元") {
-                        return `${params.value}`;
-                    }
-                    return `${params.value} 元`;
-                } else if (isPaid === '商品折價卷') {
-                    if (params.value === "Undefine %") {
-                        return `${params.value}`;
-                    }
-                    return `${params.value} %`;
-                }
-                return "Undefine";
+                return `${params.value} 元`;
             },
 
         },
@@ -245,7 +205,7 @@ export default function SellerCoupon() {
             }}
         >
             <Typography variant="h4">
-                Coupons
+                Shipping Coupon
             </Typography>
             <DataGrid
                 rows={rows}
