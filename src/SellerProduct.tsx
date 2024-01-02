@@ -6,6 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Close';
+import { Carousel } from "@material-tailwind/react";
 import { randomId } from '@mui/x-data-grid-generator';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
@@ -26,10 +27,14 @@ const initialRows: GridRowsProp = [
     {
         id: randomId(),
         name: "Example Product 001",
+        discountDate: new Date(),
+        image: "../src/assets/testProductImg.jpg",
     },
     {
         id: randomId(),
         name: "Example Product 002",
+        image: "../src/assets/testProductImg.jpg",
+        discountDate: new Date(),
     },
 ];
 
@@ -155,14 +160,27 @@ export default function SellerProduct() {
         {
             field: 'name',
             headerName: 'Product name',
-            width: 180,
+            // width: 180,
             editable: true,
-            // flex: 1,
+            flex: 1,
+        },
+        {
+            field: 'description',
+            headerName: 'Description',
+            // width: 180,
+            flex: 1,
+            editable: true,
+            valueFormatter(params) {
+                if (params.value === undefined) {
+                    params.value = "This is an example description";
+                }
+                return `${params.value}`;
+            },
         },
         {
             field: 'originalPrice',
             headerName: 'Original price',
-            width: 150,
+            width: 120,
             headerAlign: "center",
             align: "center",
             editable: true,
@@ -176,8 +194,8 @@ export default function SellerProduct() {
         },
         {
             field: 'discount',
-            headerName: 'Discount',
-            width: 150,
+            headerName: 'DiscountRate',
+            width: 120,
             headerAlign: "center",
             align: "center",
             editable: true,
@@ -186,37 +204,40 @@ export default function SellerProduct() {
                 if (params.value === undefined) {
                     params.value = 0;
                 }
-                return `${params.value} 元`;
+                return `${params.value} %`;
             },
         },
         {
-            field: 'price',
-            headerName: 'Price after discount',
-            width: 150,
+            field: 'discountDate',
+            headerName: 'DiscountDate',
             headerAlign: "center",
             align: "center",
+            type: 'date',
+            width: 120,
             editable: true,
-            type: 'number',
-            preProcessEditCellProps: (params) => {
-                const originalPrice = params.otherFieldsProps!.originalPrice.value;
-                const discountPrice = params.otherFieldsProps!.discount.value;
-
-                console.log("originalPrice: ", originalPrice);
-                console.log("discountPrice: ", discountPrice);
-
-                return { ...params.props, value: `${originalPrice - discountPrice}` };
-            },
-            valueFormatter(params) {
-                if (params.value === undefined) {
-                    params.value = 0;
-                }
-                return `${params.value} 元`;
-            },
+        },
+        {
+            field: 'image',
+            headerName: 'Image',
+            headerAlign: "center",
+            width: 150,
+            type: 'string',
+            editable: true,
+            // rnderCell: (params: any) => <img src={params.value} />,
+            renderCell: (params: any) =>
+                <Carousel loop className=' rounded-3xl h-fit dark-border' placeholder="">
+                    <img src={params.value} alt="image1" className=' h-full w-full object-cover' />
+                    <img src={params.value} alt="image2" className=' h-full w-full object-cover' />
+                    <img src={params.value} alt="image3" className=' h-full w-full object-cover' />
+                    <img src={params.value} alt="image4" className=' h-full w-full object-cover' />
+                    <img src={params.value} alt="image5" className=' h-full w-full object-cover' />
+                    <img src={params.value} alt="image6" className=' h-full w-full object-cover' />
+                </Carousel>,
         },
         {
             field: 'quantity',
             headerName: 'Quantity',
-            width: 150,
+            width: 120,
             headerAlign: "center",
             align: "center",
             editable: true,
@@ -229,16 +250,18 @@ export default function SellerProduct() {
             },
         },
         {
-            field: 'description',
-            headerName: 'Description',
-            // width: 180,
-            flex: 1,
+            field: 'sales',
+            headerName: 'Sales',
+            width: 120,
+            headerAlign: "center",
+            align: "center",
             editable: true,
+            type: 'number',
             valueFormatter(params) {
                 if (params.value === undefined) {
-                    params.value = "This is an example description";
+                    params.value = 0;
                 }
-                return `${params.value}`;
+                return `${params.value} 個`;
             },
         },
     ];
