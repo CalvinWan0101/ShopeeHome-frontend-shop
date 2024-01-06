@@ -41,7 +41,7 @@ function Header() {
         else{
             setIsLogIn(false)
         }
-        console.log(location.pathname)
+        // console.log(location.pathname)
     },[location])
 
     const {LoginState , setLoginState} = useLoginStore<Login>( (state) => state) ;

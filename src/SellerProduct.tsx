@@ -1,11 +1,14 @@
+import axios from 'axios';
 import * as React from 'react';
 import Box from '@mui/material/Box';
+import { baseURL } from "./APIconfig.ts";
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Close';
+import { useEffect, useRef, useState } from 'react';
 import { Carousel } from "@material-tailwind/react";
 import { randomId } from '@mui/x-data-grid-generator';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -24,18 +27,6 @@ import {
 } from '@mui/x-data-grid';
 
 const initialRows: GridRowsProp = [
-    {
-        id: randomId(),
-        name: "Example Product 001",
-        discountDate: new Date(),
-        image: "../src/assets/testProductImg.jpg",
-    },
-    {
-        id: randomId(),
-        name: "Example Product 002",
-        image: "../src/assets/testProductImg.jpg",
-        discountDate: new Date(),
-    },
 ];
 
 interface EditToolbarProps {
@@ -67,8 +58,67 @@ function EditToolbar(props: EditToolbarProps) {
 }
 
 export default function SellerProduct() {
+
     const [rows, setRows] = React.useState(initialRows);
-    const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+    const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+    const initialized = useRef(false);
+    let newData = useState([]);
+
+    useEffect(() => {
+        if (!initialized.current) {
+            initialized.current = true;
+
+            const getAllShopProducts = async () => {
+                try {
+                    const response = await axios.get(baseURL + "product/name/shop/1013f7a0-0017-4c21-872f-c014914e6834", {});
+                    newData = response.data;
+                    await getproductsInfo(newData);
+                } catch (error) {
+                    console.log(error);
+                }
+            };
+
+            const getproductsInfo = async (data: any[] = []) => {
+                try {
+                    const promises = data.map((product: any) => {
+                        return axios.get(baseURL + "product/" + product.id, {});
+                    });
+
+                    const responses = await Promise.all(promises);
+
+                    const productInfoArray = responses.map((response) => response.data);
+                    setInitialRows(productInfoArray);
+                } catch (error) {
+                    console.log(error);
+                }
+            };
+
+            const setInitialRows = (data: object[]) => {
+                data.forEach((product: any) => {
+                    if (!(rows.find(obj => obj.id === product.id))) {
+                        const newRow = {
+                            id: product.id,
+                            name: product.name,
+                            description: product.description,
+                            originalPrice: product.price,
+                            discount: product.discountRate,
+                            discountDate: new Date(product.discountDate),
+                            image: product.images,
+                            quantity: product.amount,
+                            sales: product.sales,
+                        };
+
+                        setTimeout(() => {
+                            setRows(oldRows => [...oldRows, newRow]);
+                        }, 0);
+                    }
+                });
+            };
+
+            getAllShopProducts();
+        }
+    });
 
     const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
         if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -179,7 +229,7 @@ export default function SellerProduct() {
         },
         {
             field: 'originalPrice',
-            headerName: 'Original price',
+            headerName: 'Price',
             width: 120,
             headerAlign: "center",
             align: "center",
@@ -218,20 +268,16 @@ export default function SellerProduct() {
         },
         {
             field: 'image',
-            headerName: 'Image',
+            headerName: 'Images',
             headerAlign: "center",
             width: 150,
             type: 'string',
             editable: true,
-            // rnderCell: (params: any) => <img src={params.value} />,
             renderCell: (params: any) =>
-                <Carousel loop className=' rounded-3xl h-fit dark-border' placeholder="">
-                    <img src={params.value} alt="image1" className=' h-full w-full object-cover' />
-                    <img src={params.value} alt="image2" className=' h-full w-full object-cover' />
-                    <img src={params.value} alt="image3" className=' h-full w-full object-cover' />
-                    <img src={params.value} alt="image4" className=' h-full w-full object-cover' />
-                    <img src={params.value} alt="image5" className=' h-full w-full object-cover' />
-                    <img src={params.value} alt="image6" className=' h-full w-full object-cover' />
+                <Carousel loop placeholder="">
+                    {params.value.map((image: string) => (
+                        <img src={image} key={params.value} />
+                    ))}
                 </Carousel>,
         },
         {
@@ -251,7 +297,7 @@ export default function SellerProduct() {
         },
         {
             field: 'sales',
-            headerName: 'Sales',
+            headerName: 'Sold out',
             width: 120,
             headerAlign: "center",
             align: "center",
@@ -269,7 +315,7 @@ export default function SellerProduct() {
     return (
         <Box
             sx={{
-                height: 450,
+                height: 850,
                 width: '90%',
                 margin: 'auto',
                 '& .actions': {
@@ -293,6 +339,7 @@ export default function SellerProduct() {
                 onRowModesModelChange={handleRowModesModelChange}
                 onRowEditStop={handleRowEditStop}
                 processRowUpdate={processRowUpdate}
+                rowHeight={150} {...rows}
                 slots={{
                     toolbar: EditToolbar,
                 }}
