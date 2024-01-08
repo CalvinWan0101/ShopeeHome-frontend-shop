@@ -3,11 +3,13 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { baseURL } from "./APIconfig.ts";
 import Button from '@mui/material/Button';
-import { Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import UploadImages from './UploadImages.tsx';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
+import { Modal, Typography } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Close';
+import UploadIcon from '@mui/icons-material/Upload';
 import { useEffect, useRef, useState } from 'react';
 import { Carousel } from "@material-tailwind/react";
 import { randomId } from '@mui/x-data-grid-generator';
@@ -24,10 +26,10 @@ import {
     GridRowId,
     GridRowModel,
     GridRowEditStopReasons,
+    GridValidRowModel,
 } from '@mui/x-data-grid';
 
-const initialRows: GridRowsProp = [
-];
+const initialRows: GridRowsProp = [];
 
 interface EditToolbarProps {
     setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -57,6 +59,8 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
+const shopId = "1013f7a0-0017-4c21-872f-c014914e6834";
+
 export default function SellerProduct() {
 
     const [rows, setRows] = React.useState(initialRows);
@@ -65,13 +69,15 @@ export default function SellerProduct() {
     const initialized = useRef(false);
     let newData = useState([]);
 
+    const [isUploadModalOpen, setUploadModalOpen] = useState(false);
+
     useEffect(() => {
         if (!initialized.current) {
             initialized.current = true;
 
             const getAllShopProducts = async () => {
                 try {
-                    const response = await axios.get(baseURL + "product/name/shop/1013f7a0-0017-4c21-872f-c014914e6834", {});
+                    const response = await axios.get(baseURL + "product/name/shop/" + shopId, {});
                     newData = response.data;
                     await getproductsInfo(newData);
                 } catch (error) {
@@ -128,6 +134,7 @@ export default function SellerProduct() {
 
     const handleEditClick = (id: GridRowId) => () => {
         setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+        setInfoChanged(rows.find((row) => row.id === id) || undefined);
     };
 
     const handleSaveClick = (id: GridRowId) => () => {
@@ -153,12 +160,43 @@ export default function SellerProduct() {
     const processRowUpdate = (newRow: GridRowModel) => {
         const updatedRow = { ...newRow, isNew: false };
         setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+
+        axios
+            .put(baseURL + "product/" + newRow.id, {
+                name: newRow.name,
+                amount: newRow.quantity,
+                price: newRow.originalPrice,
+                description: newRow.description,
+                discountRate: newRow.discount,
+                discountDate: newRow.discountDate,
+                shopId: shopId,
+                images: newRow.image,
+                isDeleted: false,
+            })
+            .then((response) => {
+                console.log(response.data);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
         return updatedRow;
     };
 
     const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
         setRowModesModel(newRowModesModel);
     };
+
+    const handleUploadClick = () => () => {
+        setUploadModalOpen(true);
+    };
+
+    const handleUploadModalClose = () => {
+        setUploadModalOpen(false);
+        window.location.reload();
+    };
+
+    const [infoChanged, setInfoChanged] = useState<GridValidRowModel | undefined>(undefined);
 
     const columns: GridColDef[] = [
         {
@@ -177,14 +215,26 @@ export default function SellerProduct() {
                             label="Save"
                             sx={{
                                 color: 'primary.main',
+                                marginRight: -1,
                             }}
+                            size='small'
                             onClick={handleSaveClick(id)}
                         />,
                         <GridActionsCellItem
                             icon={<CancelIcon />}
                             label="Cancel"
                             className="textPrimary"
+                            sx={{
+                                marginRight: -1,
+                            }}
                             onClick={handleCancelClick(id)}
+                            color="inherit"
+                        />,
+                        <GridActionsCellItem
+                            icon={<UploadIcon />}
+                            label="Cancel"
+                            className="textPrimary"
+                            onClick={handleUploadClick()}
                             color="inherit"
                         />,
                     ];
@@ -192,6 +242,7 @@ export default function SellerProduct() {
 
                 return [
                     <GridActionsCellItem
+                        key="view-actions"
                         icon={<EditIcon />}
                         label="Edit"
                         className="textPrimary"
@@ -199,11 +250,12 @@ export default function SellerProduct() {
                         color="inherit"
                     />,
                     <GridActionsCellItem
+                        key="delete-actions"
                         icon={<DeleteIcon />}
                         label="Delete"
                         onClick={handleDeleteClick(id)}
                         color="inherit"
-                    />,
+                    />
                 ];
             },
         },
@@ -273,12 +325,21 @@ export default function SellerProduct() {
             width: 150,
             type: 'string',
             editable: true,
-            renderCell: (params: any) =>
-                <Carousel loop placeholder="">
-                    {params.value.map((image: string) => (
-                        <img src={image} key={params.value} />
-                    ))}
-                </Carousel>,
+            renderCell: (params: any) => {
+                if (Array.isArray(params.value) && params.value.length > 0) {
+                    return (
+                        <>
+                            <Carousel loop placeholder="">
+                                {params.value.map((image: string, index: number) => (
+                                    <img src={image} key={index} />
+                                ))}
+                            </Carousel>
+                        </>
+                    );
+                } else {
+                    return <div>沒有圖片</div>;
+                }
+            },
         },
         {
             field: 'quantity',
@@ -339,7 +400,8 @@ export default function SellerProduct() {
                 onRowModesModelChange={handleRowModesModelChange}
                 onRowEditStop={handleRowEditStop}
                 processRowUpdate={processRowUpdate}
-                rowHeight={150} {...rows}
+                // rowHeight={150} {...rows}
+                getRowHeight={() => 'auto'}
                 slots={{
                     toolbar: EditToolbar,
                 }}
@@ -358,6 +420,14 @@ export default function SellerProduct() {
                     border: '1px solid #ccc',
                 }}
             />
+            <Modal
+                open={isUploadModalOpen}
+                onClose={handleUploadModalClose}
+                aria-labelledby="upload-modal-title"
+                aria-describedby="upload-modal-description"
+            >
+                <UploadImages infoChanged = {infoChanged} shopId={shopId}/>
+            </Modal>
         </Box>
     );
 }
