@@ -67,7 +67,7 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
-export default function SeasoningCoupon() {
+export default function ShippingCoupons() {
 
     const {id} = useParams(); 
     const shopId = id; 
