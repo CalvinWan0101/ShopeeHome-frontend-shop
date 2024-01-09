@@ -12,7 +12,6 @@ import CancelIcon from '@mui/icons-material/Close';
 import UploadIcon from '@mui/icons-material/Upload';
 import { useEffect, useRef, useState } from 'react';
 import { Carousel } from "@material-tailwind/react";
-import { randomId } from '@mui/x-data-grid-generator';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
     GridRowsProp,
@@ -42,12 +41,28 @@ function EditToolbar(props: EditToolbarProps) {
     const { setRows, setRowModesModel } = props;
 
     const handleClick = () => {
-        const id = randomId();
-        setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
-        setRowModesModel((oldModel) => ({
-            ...oldModel,
-            [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-        }));
+        axios
+            .post(baseURL + "product", {
+                name: "",
+                amount: null,
+                description: "",
+                discountRate: null,
+                discountDate: null,
+                shopId: shopId,
+                images: [],
+                isDeleted: false,
+            })
+            .then((response) => {
+                const id = response.data.id;
+                setRows((oldRows) => [...oldRows, { id, name: response.data.name, isNew: true }]);
+                setRowModesModel((oldModel) => ({
+                    ...oldModel,
+                    [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+                }));
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     return (
@@ -59,7 +74,8 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
-const shopId = "1013f7a0-0017-4c21-872f-c014914e6834";
+// const shopId = "1013f7a0-0017-4c21-872f-c014914e6834";
+const shopId = "f0694ecf-6282-48f9-a401-49eb08067ce0";
 
 export default function SellerProduct() {
 
@@ -109,7 +125,7 @@ export default function SellerProduct() {
                             description: product.description,
                             originalPrice: product.price,
                             discount: product.discountRate,
-                            discountDate: new Date(product.discountDate),
+                            discountDate: product.discountDate,
                             image: product.images,
                             quantity: product.amount,
                             sales: product.sales,
@@ -172,9 +188,6 @@ export default function SellerProduct() {
                 shopId: shopId,
                 images: newRow.image,
                 isDeleted: false,
-            })
-            .then((response) => {
-                console.log(response.data);
             })
             .catch((error) => {
                 console.error(error);
@@ -265,6 +278,25 @@ export default function SellerProduct() {
             // width: 180,
             editable: true,
             flex: 1,
+            renderCell: (params: any) => {
+                if (params.value === undefined || params.value === null || params.value === "") {
+                    return (
+                        <div>
+                            <Typography color={"red"}>
+                                Undefined
+                            </Typography>
+                        </div>
+                    );
+                }
+                return (
+                    <div>
+                        <Typography>
+                            {params.value}
+                        </Typography>
+                    </div>
+                );
+            },
+
         },
         {
             field: 'description',
@@ -272,12 +304,6 @@ export default function SellerProduct() {
             // width: 180,
             flex: 1,
             editable: true,
-            valueFormatter(params) {
-                if (params.value === undefined) {
-                    params.value = "This is an example description";
-                }
-                return `${params.value}`;
-            },
         },
         {
             field: 'originalPrice',
@@ -303,10 +329,10 @@ export default function SellerProduct() {
             editable: true,
             type: 'number',
             valueFormatter(params) {
-                if (params.value === undefined) {
-                    params.value = 0;
+                if (params.value === undefined || params.value === null) {
+                    return "Null";
                 }
-                return `${params.value} %`;
+                return `${params.value * 100} %`;
             },
         },
         {
@@ -317,11 +343,18 @@ export default function SellerProduct() {
             type: 'date',
             width: 120,
             editable: true,
+            valueFormatter(params) {
+                if (params.value === undefined || params.value === null) {
+                    return "Null";
+                }
+                return `${params.value}`;
+            },
         },
         {
             field: 'image',
             headerName: 'Images',
             headerAlign: "center",
+            align: "center",
             width: 150,
             type: 'string',
             editable: true,
@@ -337,7 +370,7 @@ export default function SellerProduct() {
                         </>
                     );
                 } else {
-                    return <div>沒有圖片</div>;
+                    return <div color='red'>沒有圖片</div>;
                 }
             },
         },
@@ -400,8 +433,8 @@ export default function SellerProduct() {
                 onRowModesModelChange={handleRowModesModelChange}
                 onRowEditStop={handleRowEditStop}
                 processRowUpdate={processRowUpdate}
-                // rowHeight={150} {...rows}
-                getRowHeight={() => 'auto'}
+                rowHeight={150} {...rows}
+                // getRowHeight={() => 'auto'}
                 slots={{
                     toolbar: EditToolbar,
                 }}
@@ -426,7 +459,7 @@ export default function SellerProduct() {
                 aria-labelledby="upload-modal-title"
                 aria-describedby="upload-modal-description"
             >
-                <UploadImages infoChanged = {infoChanged} shopId={shopId}/>
+                <UploadImages infoChanged={infoChanged} shopId={shopId} />
             </Modal>
         </Box>
     );
