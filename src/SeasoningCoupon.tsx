@@ -1,12 +1,12 @@
-import * as React from 'react';
+import axios from 'axios';
 import Box from '@mui/material/Box';
+import { baseURL } from './APIconfig';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
-import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Close';
-import { randomId } from '@mui/x-data-grid-generator';
+import { useEffect, useRef, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import {
     GridRowsProp,
@@ -22,18 +22,7 @@ import {
     GridRowEditStopReasons,
 } from '@mui/x-data-grid';
 
-const initialRows: GridRowsProp = [
-    {
-        id: randomId(),
-        name: "Seasoning Coupon 001",
-        deadline: new Date(),
-    },
-    {
-        id: randomId(),
-        name: "Seasoning Coupon 002",
-        deadline: new Date(),
-    },
-];
+const initialRows: GridRowsProp = [];
 
 interface EditToolbarProps {
     setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -46,12 +35,23 @@ function EditToolbar(props: EditToolbarProps) {
     const { setRows, setRowModesModel } = props;
 
     const handleClick = () => {
-        const id = randomId();
-        setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
-        setRowModesModel((oldModel) => ({
-            ...oldModel,
-            [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-        }));
+        axios
+            .post(baseURL + "coupon/seasoning", {
+                date: null,
+                shopId: shopId,
+                rate: 0.0,
+            })
+            .then((response) => {
+                const id = response.data.id;
+                setRows((oldRows) => [...oldRows, { id, name: '', discount: '', deadline: '', isNew: true }]);
+                setRowModesModel((oldModel) => ({
+                    ...oldModel,
+                    [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+                }));
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     return (
@@ -63,18 +63,49 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
+// const shopId = "1013f7a0-0017-4c21-872f-c014914e6834";
+const shopId = "f0694ecf-6282-48f9-a401-49eb08067ce0";
+
 export default function SeasoningCoupon() {
-    const [rows, setRows] = React.useState(initialRows);
-    const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+    const [rows, setRows] = useState(initialRows);
+    const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+    const initialized = useRef(false);
+
+    useEffect(() => {
+        if (!initialized.current) {
+            initialized.current = true;
+
+            const getAllShopProducts = async () => {
+                try {
+                    const response = await axios.get(baseURL + "coupon/shop/" + shopId, {});
+                    let seasoningCoupons = response.data.seasoningCoupons;
+                    await getproductsInfo(seasoningCoupons);
+                } catch (error) {
+                    console.log(error);
+                }
+            };
+
+            const getproductsInfo = async (data: any[] = []) => {
+                data.forEach((product: any) => {
+                    const newRow = {
+                        id: product.id,
+                        name: product.rate,
+                        discount: product.rate,
+                        deadline: product.date,
+                    };
+                    setRows(oldRows => [...oldRows, newRow]);
+                });
+            };
+
+            getAllShopProducts();
+        }
+    });
 
     const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
         if (params.reason === GridRowEditStopReasons.rowFocusOut) {
             event.defaultMuiPrevented = true;
         }
-    };
-
-    const handleEditClick = (id: GridRowId) => () => {
-        setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
     };
 
     const handleSaveClick = (id: GridRowId) => () => {
@@ -83,6 +114,7 @@ export default function SeasoningCoupon() {
 
     const handleDeleteClick = (id: GridRowId) => () => {
         setRows(rows.filter((row) => row.id !== id));
+        axios.delete(baseURL + "coupon/" + id, {})
     };
 
     const handleCancelClick = (id: GridRowId) => () => {
@@ -95,12 +127,31 @@ export default function SeasoningCoupon() {
         if (editedRow!.isNew) {
             setRows(rows.filter((row) => row.id !== id));
         }
+
+        axios.delete(baseURL + "coupon/" + id, {})
     };
 
     const processRowUpdate = (newRow: GridRowModel) => {
         const updatedRow = { ...newRow, isNew: false };
         setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-        return updatedRow;
+
+        if (newRow.discount === undefined || newRow.discount === null || newRow.discount === "" || newRow.discount === 0) {
+            confirm("Discount Rate cannot be empty.\nPlease add a new coupon with valid discount rate.");
+            axios.delete(baseURL + "coupon/" + newRow.id, {})
+            window.location.reload();
+        } else {
+            axios
+                .put(baseURL + "coupon/seasoning/" + newRow.id, {
+                    "date": newRow.deadline,
+                    "shopId": shopId,
+                    "rate": newRow.discount,
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+
+            return updatedRow;
+        }
     };
 
     const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
@@ -139,13 +190,6 @@ export default function SeasoningCoupon() {
 
                 return [
                     <GridActionsCellItem
-                        icon={<EditIcon />}
-                        label="Edit"
-                        className="textPrimary"
-                        onClick={handleEditClick(id)}
-                        color="inherit"
-                    />,
-                    <GridActionsCellItem
                         icon={<DeleteIcon />}
                         label="Delete"
                         onClick={handleDeleteClick(id)}
@@ -156,14 +200,20 @@ export default function SeasoningCoupon() {
         },
         {
             field: 'name',
-            headerName: 'Unique name/ID',
+            headerName: 'Name',
             width: 180,
-            editable: true,
+            editable: false,
             flex: 1,
+            valueGetter(params) {
+                if (params.row.discount === undefined || params.row.discount === null || params.row.discount === "" || params.row.discount === 0) {
+                    return "Can not be edited";
+                }
+                return `單筆訂單打${params.row.discount.toString().split(".")[1]}折`;
+            },
         },
         {
             field: 'discount',
-            headerName: 'Discount',
+            headerName: 'Discount Rate',
             width: 150,
             editable: true,
             type: 'number',
@@ -171,11 +221,10 @@ export default function SeasoningCoupon() {
             align: "center",
             valueFormatter(params) {
                 if (params.value === undefined) {
-                    params.value = 100;
+                    params.value = "null";
                 }
-                return `${params.value} %`;
+                return `${params.value * 100} %`;
             },
-
         },
         {
             field: 'deadline',
@@ -185,9 +234,16 @@ export default function SeasoningCoupon() {
             type: 'date',
             width: 180,
             editable: true,
+            valueFormatter(params) {
+                if (params.value === undefined || params.value === null || params.value === "") {
+                    return "Null";
+                }
+                const date = new Date(params.value);
+                return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+            },
         },
     ];
-
+    
     return (
         <Box
             sx={{
@@ -215,6 +271,7 @@ export default function SeasoningCoupon() {
                 onRowModesModelChange={handleRowModesModelChange}
                 onRowEditStop={handleRowEditStop}
                 processRowUpdate={processRowUpdate}
+                isCellEditable={(params) => params.row.isNew === true && (params.field === 'deadline' || params.field === 'discount')}
                 slots={{
                     toolbar: EditToolbar,
                 }}
