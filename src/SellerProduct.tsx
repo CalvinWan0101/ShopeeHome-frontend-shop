@@ -159,6 +159,8 @@ export default function SellerProduct() {
 
     const handleDeleteClick = (id: GridRowId) => () => {
         setRows(rows.filter((row) => row.id !== id));
+        console.log(id);
+        axios.delete(baseURL + "product/" + id, {})
     };
 
     const handleCancelClick = (id: GridRowId) => () => {
