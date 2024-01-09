@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as React from 'react';
+import Cookies from 'js-cookie';
 import Box from '@mui/material/Box';
 import { baseURL } from "./APIconfig.ts";
 import { Typography } from '@mui/material';
@@ -7,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
+import { useLoginStore } from './LoginState.ts';
 import CancelIcon from '@mui/icons-material/Close';
 import { randomId } from '@mui/x-data-grid-generator';
 import {
@@ -61,38 +63,65 @@ let newData: { [key: string]: any } = {
 
 export default function SellerInformation() {
 
-    const {id} = useParams(); 
+    const { id } = useParams();
     const shopId = id;
 
     const [rows, setRows] = useState(initialRows);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 
-    useEffect(() => {
-        axios
-            .get(baseURL + "shop/" + shopId, {})
-            .then((response) => {
-                let info = response.data;
-                initialRows[0].info_value = info.name;
-                initialRows[1].info_value = info.phoneNumber;
-                initialRows[2].info_value = info.email;
-                initialRows[3].info_value = info.address;
-                initialRows[4].info_value = info.description;
+    const { Login } = useLoginStore((state) => state);
 
-                newData.email = info.email;
-                newData.name = info.name;
-                newData.phoneNumber = info.phoneNumber;
-                newData.address = info.address;
-                newData.description = info.description;
-                newData.avatar = info.avatar;
-                newData.background = info.background;
-                newData.createrId = info.createrId;
-                newData.deleterId = info.deleterId;
-                newData.deleted = info.deleted;
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    });
+    useEffect(() => {
+        const fetchData = async () => {
+            if (shopId) {
+                try {
+                    if (Cookies.get(shopId.toString()) === "false" || Cookies.get(shopId.toString()) === undefined) {
+                        window.location.href = "/login";
+                    } else {
+                        const response = await axios.get(baseURL + "shop/" + shopId, {});
+                        const info = response.data;
+
+                        initialRows[0].info_value = info.name;
+                        initialRows[1].info_value = info.phoneNumber;
+                        initialRows[2].info_value = info.email;
+                        initialRows[3].info_value = info.address;
+                        initialRows[4].info_value = info.description;
+
+                        newData.email = info.email;
+                        newData.name = info.name;
+                        newData.phoneNumber = info.phoneNumber;
+                        newData.address = info.address;
+                        newData.description = info.description;
+                        newData.avatar = info.avatar;
+                        newData.background = info.background;
+                        newData.createrId = info.createrId;
+                        newData.deleterId = info.deleterId;
+                        newData.deleted = info.deleted;
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        };
+
+        const login = async () => {
+            await fetchData();
+            let loginInfo = {
+                id: shopId || '',
+                email: newData.email,
+                name: newData.name,
+                phoneNumber: newData.phoneNumber,
+                avatar: newData.avatar,
+                addresses: [newData.address],
+                deleted: newData.deleted,
+            }
+            Login(loginInfo);
+        };
+
+        login();
+
+    }, [shopId]);
+
 
     const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
         if (params.reason === GridRowEditStopReasons.rowFocusOut) {
