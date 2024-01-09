@@ -3,15 +3,16 @@ import Cookies from 'js-cookie'
 import '/src/css/Animation.scss'
 import UserAvater from './UserAvater.tsx'
 import { useEffect, useState } from 'react'
-import SearchIcon from '@mui/icons-material/Search'
 import LogoutIcon from '@mui/icons-material/Logout'
 import PersonIcon from '@mui/icons-material/Person'
 import { Login, useLoginStore } from './LoginState'
+import DiscountIcon from '@mui/icons-material/Discount';
+import CategoryIcon from '@mui/icons-material/Category';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { IconButton, Icon, ButtonBase, Avatar } from '@mui/material';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom'
-import { Divider, IconButton, InputBase, Paper, Icon, ButtonBase, Avatar } from '@mui/material';
-import { Drawer, Typography, List, ListItem, ListItemPrefix, ListItemSuffix, Chip } from '@material-tailwind/react'
+import { Drawer, Typography, List, ListItem, ListItemPrefix } from '@material-tailwind/react'
 
 function Header() {
 
@@ -94,22 +95,25 @@ function Header() {
                     </div>
                 </div>
                 <List>
-                    <ListItem onClick={() => { closeDrawer(); navigate("/PersionalInformation"); }}>
+                    <ListItem onClick={() => { closeDrawer(); navigate("/SellerInfo/" + User.id); }}>
                         <ListItemPrefix>
                             <PersonIcon />
                         </ListItemPrefix>
                         Persional Information
                     </ListItem>
-                    <ListItem onClick={() => { closeDrawer(); navigate("/Shoppingcart"); }}>
+                    <ListItem onClick={() => { closeDrawer(); navigate("/SellerCoupon/" + User.id); }}>
                         <ListItemPrefix>
-                            <ShoppingCartIcon />
+                            <DiscountIcon />
                         </ListItemPrefix>
-                        ShoppingCart
-                        <ListItemSuffix>
-                            <Chip value="5" size="sm" color='light-green' className="rounded-full" />
-                        </ListItemSuffix>
+                        Coupons
                     </ListItem>
-                    <ListItem onClick={() => { closeDrawer(); navigate("/order"); }}>
+                    <ListItem onClick={() => { closeDrawer(); navigate("/SellerProduct/" + User.id); }}>
+                        <ListItemPrefix>
+                            <CategoryIcon />
+                        </ListItemPrefix>
+                        Products
+                    </ListItem>
+                    <ListItem onClick={() => { closeDrawer(); navigate("/SellerOrder/" + User.id); }}>
                         <ListItemPrefix>
                             <ReceiptLongIcon />
                         </ListItemPrefix>
@@ -132,42 +136,12 @@ function Header() {
         )
     }
 
-    function CenterArea() {
-
-        const [keyword, setKeyword] = useState("")
-
-        function handleSearch() {
-            if (keyword != "") {
-                navigate('/search/' + keyword)
-            }
-        }
-
-        return (
-            <div className=' h-full w-3/6 p-1 ml-5 box-border'>
-                {!isLogInPage &&
-                    <Paper component='form' className='bg1' sx={{ p: '2px 4px', ml: '10px', display: 'flex', alignItems: 'center', width: "100%", height: "95%" }}>
-                        <InputBase sx={{ ml: 1, flex: 1 }} placeholder="搜尋產品" onKeyDown={(Event) => { if (Event.key === "Enter") { handleSearch() } }} onChange={(event) => setKeyword(event.target.value)} />
-                        <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-                        <IconButton type="button" sx={{ p: '10px' }} aria-label="search" onClick={handleSearch}>
-                            <SearchIcon />
-                        </IconButton>
-                    </Paper>
-                }
-                {isLogInPage &&
-                    <div id="logintext" className=' p-2 box-border text-2xl flex items-center text-gray-400'>
-                        Login
-                    </div>
-                }
-            </div>
-        )
-    }
-
     function Logo() {
         return (
             <div className=' h-full w-auto rounded-full p-2 box-border hover:animate-pulse'>
                 <Link to={'/'} id='shopeeLogo' className=' h-full flex items-center'>
                     <Icon component={ShoppingCartIcon} fontSize='large'></Icon>
-                    <span className=' flex-nowrap text-2xl ml-2'>Shopee Home</span>
+                    <span className=' flex-nowrap text-2xl ml-2'>Shopee Home Seller</span>
                 </Link>
             </div>
         )
@@ -179,7 +153,6 @@ function Header() {
             <div id='autoScoll' className=' h-screen overflow-y-scroll'>
                 <header className=' h-20 p-3 flex items-center bg3'>
                     <Logo />
-                    <CenterArea />
                     <AccountArea />
                 </header>
                 <div className=' h-full '>

@@ -5,6 +5,7 @@ import { baseURL } from './APIconfig';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
 import { useParams } from 'react-router-dom';
+import { useLoginStore } from './LoginState';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -78,9 +79,67 @@ export default function SeasoningCoupon() {
 
     const initialized = useRef(false);
 
+    const { Login } = useLoginStore((state) => state);
+
     useEffect(() => {
+
+        const newData = {
+            email: "",
+            name: "",
+            phoneNumber: "",
+            avatar: "",
+            address: "",
+            description: "",
+            background: "",
+            createrId: "",
+            deleterId: "",
+            deleted: false,
+        };
+
         if (!initialized.current) {
             initialized.current = true;
+
+            const fetchData = async () => {
+                if (shopId) {
+                    try {
+                        if (Cookies.get(shopId.toString()) === "false" || Cookies.get(shopId.toString()) === undefined) {
+                            window.location.href = "/login";
+                        } else {
+                            const response = await axios.get(baseURL + "shop/" + shopId, {});
+                            const info = response.data;
+
+                            newData.email = info.email;
+                            newData.name = info.name;
+                            newData.phoneNumber = info.phoneNumber;
+                            newData.address = info.address;
+                            newData.description = info.description;
+                            newData.avatar = info.avatar;
+                            newData.background = info.background;
+                            newData.createrId = info.createrId;
+                            newData.deleterId = info.deleterId;
+                            newData.deleted = info.deleted;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            };
+
+            const login = async () => {
+                await fetchData();
+                let loginInfo = {
+                    id: shopId || '',
+                    email: newData.email,
+                    name: newData.name,
+                    phoneNumber: newData.phoneNumber,
+                    avatar: newData.avatar,
+                    addresses: [newData.address],
+                    deleted: newData.deleted,
+                }
+                Login(loginInfo);
+            };
+
+            login();
 
             if (shopId) {
                 if (Cookies.get(shopId.toString()) === "false" || Cookies.get(shopId.toString()) === undefined) {

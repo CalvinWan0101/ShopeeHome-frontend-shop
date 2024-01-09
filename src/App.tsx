@@ -1,7 +1,11 @@
 import './App.scss'
 import LogIn from './LogIn'
-import Seller from './Seller'
 import Header from './Header'
+import SellerOrder from './SellerOrder'
+import SellerProduct from './SellerProduct'
+import SellerInformation from './SellerInfo'
+import ShippingCoupons from './ShippingCoupon'
+import SeasoningCoupon from './SeasoningCoupon'
 import {
   BrowserRouter,
   Routes,
@@ -15,7 +19,10 @@ function App() {
         <Routes>
           <Route path='' element={<Header />}>
             <Route path='/login' element={<LogIn />}></Route>
-            <Route path='/Seller/:id' element={<Seller />}></Route>
+            <Route path='/SellerInfo/:id' element={<SellerInformation />}></Route>
+            <Route path='/SellerCoupon/:id' element={<><SeasoningCoupon /> <ShippingCoupons /></>}></Route>
+            <Route path='/SellerProduct/:id' element={<SellerProduct />}></Route>
+            <Route path='/SellerOrder/:id' element={<SellerOrder />}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

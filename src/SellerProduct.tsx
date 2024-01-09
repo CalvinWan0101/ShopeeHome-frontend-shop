@@ -9,6 +9,7 @@ import AddIcon from '@mui/icons-material/Add';
 import UploadImages from './UploadImages.tsx';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
+import { useLoginStore } from './LoginState.ts';
 import { Modal, Typography } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Close';
 import UploadIcon from '@mui/icons-material/Upload';
@@ -92,9 +93,67 @@ export default function SellerProduct() {
 
     const [isUploadModalOpen, setUploadModalOpen] = useState(false);
 
+    const { Login } = useLoginStore((state) => state);
+
     useEffect(() => {
+
+        const LoginData = {
+            email: "",
+            name: "",
+            phoneNumber: "",
+            avatar: "",
+            address: "",
+            description: "",
+            background: "",
+            createrId: "",
+            deleterId: "",
+            deleted: false,
+        };
+
         if (!initialized.current) {
             initialized.current = true;
+
+            const fetchData = async () => {
+                if (shopId) {
+                    try {
+                        if (Cookies.get(shopId.toString()) === "false" || Cookies.get(shopId.toString()) === undefined) {
+                            window.location.href = "/login";
+                        } else {
+                            const response = await axios.get(baseURL + "shop/" + shopId, {});
+                            const info = response.data;
+
+                            LoginData.email = info.email;
+                            LoginData.name = info.name;
+                            LoginData.phoneNumber = info.phoneNumber;
+                            LoginData.address = info.address;
+                            LoginData.description = info.description;
+                            LoginData.avatar = info.avatar;
+                            LoginData.background = info.background;
+                            LoginData.createrId = info.createrId;
+                            LoginData.deleterId = info.deleterId;
+                            LoginData.deleted = info.deleted;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            };
+
+            const login = async () => {
+                await fetchData();
+                let loginInfo = {
+                    id: shopId || '',
+                    email: LoginData.email,
+                    name: LoginData.name,
+                    phoneNumber: LoginData.phoneNumber,
+                    avatar: LoginData.avatar,
+                    addresses: [LoginData.address],
+                    deleted: LoginData.deleted,
+                }
+                Login(loginInfo);
+            };
+
+            login();
 
             if (shopId) {
                 if (Cookies.get(shopId.toString()) === "false" || Cookies.get(shopId.toString()) === undefined) {

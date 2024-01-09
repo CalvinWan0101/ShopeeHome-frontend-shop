@@ -59,7 +59,7 @@ function LogIn() {
                 setPasswordErrorText("")
                 Login(response.data)
                 Cookies.set(response.data.id, "true")
-                navigate('/Seller/' + response.data.id)
+                navigate('/SellerInfo/' + response.data.id)
             })
             .catch((error) => {
                 setAccountError(true)
