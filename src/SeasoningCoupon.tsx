@@ -132,8 +132,6 @@ export default function SeasoningCoupon() {
         if (editedRow!.isNew) {
             setRows(rows.filter((row) => row.id !== id));
         }
-
-        axios.delete(baseURL + "coupon/" + id, {})
     };
 
     const processRowUpdate = (newRow: GridRowModel) => {
