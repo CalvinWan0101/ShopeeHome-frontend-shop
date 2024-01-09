@@ -4,8 +4,9 @@ import Box from '@mui/material/Box';
 import { baseURL } from "./APIconfig.ts";
 import { Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import SaveIcon from '@mui/icons-material/Save';
+import { useParams } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 import { randomId } from '@mui/x-data-grid-generator';
 import {
@@ -60,12 +61,15 @@ let newData: { [key: string]: any } = {
 
 export default function SellerInformation() {
 
+    const {id} = useParams(); 
+    const shopId = id;
+
     const [rows, setRows] = useState(initialRows);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
 
     useEffect(() => {
         axios
-            .get(baseURL + "shop/1013f7a0-0017-4c21-872f-c014914e6834", {})
+            .get(baseURL + "shop/" + shopId, {})
             .then((response) => {
                 let info = response.data;
                 initialRows[0].info_value = info.name;
@@ -139,7 +143,7 @@ export default function SellerInformation() {
         }
 
         axios
-            .put(baseURL + "shop/1013f7a0-0017-4c21-872f-c014914e6834", {
+            .put(baseURL + "shop/" + shopId, {
                 email: newData.email,
                 password: newData.password,
                 name: newData.name,

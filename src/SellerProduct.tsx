@@ -3,6 +3,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { baseURL } from "./APIconfig.ts";
 import Button from '@mui/material/Button';
+import { useParams } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import UploadImages from './UploadImages.tsx';
 import SaveIcon from '@mui/icons-material/Save';
@@ -40,6 +41,9 @@ interface EditToolbarProps {
 function EditToolbar(props: EditToolbarProps) {
     const { setRows, setRowModesModel } = props;
 
+    const {id} = useParams(); 
+    const shopId = id; 
+
     const handleClick = () => {
         axios
             .post(baseURL + "product", {
@@ -74,10 +78,10 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
-// const shopId = "1013f7a0-0017-4c21-872f-c014914e6834";
-const shopId = "f0694ecf-6282-48f9-a401-49eb08067ce0";
-
 export default function SellerProduct() {
+
+    const {id} = useParams(); 
+    const shopId = id; 
 
     const [rows, setRows] = React.useState(initialRows);
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});

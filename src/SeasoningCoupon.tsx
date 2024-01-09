@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import { baseURL } from './APIconfig';
 import Button from '@mui/material/Button';
 import { Typography } from '@mui/material';
+import { useParams } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
@@ -33,6 +34,9 @@ interface EditToolbarProps {
 
 function EditToolbar(props: EditToolbarProps) {
     const { setRows, setRowModesModel } = props;
+    
+    const {id} = useParams();
+    const shopId = id;
 
     const handleClick = () => {
         axios
@@ -63,10 +67,11 @@ function EditToolbar(props: EditToolbarProps) {
     );
 }
 
-// const shopId = "1013f7a0-0017-4c21-872f-c014914e6834";
-const shopId = "f0694ecf-6282-48f9-a401-49eb08067ce0";
-
 export default function SeasoningCoupon() {
+
+    const {id} = useParams(); 
+    const shopId = id; 
+    
     const [rows, setRows] = useState(initialRows);
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
