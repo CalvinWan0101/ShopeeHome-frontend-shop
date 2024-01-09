@@ -139,10 +139,10 @@ function Header() {
     function Logo() {
         return (
             <div className=' h-full w-auto rounded-full p-2 box-border hover:animate-pulse'>
-                <Link to={'/'} id='shopeeLogo' className=' h-full flex items-center'>
+                <div id='shopeeLogo' className=' h-full flex items-center'>
                     <Icon component={ShoppingCartIcon} fontSize='large'></Icon>
                     <span className=' flex-nowrap text-2xl ml-2'>Shopee Home Seller</span>
-                </Link>
+                </div>
             </div>
         )
     }
