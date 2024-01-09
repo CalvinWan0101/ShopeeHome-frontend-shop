@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import Box from '@mui/material/Box';
 import { baseURL } from './APIconfig';
 import Button from '@mui/material/Button';
@@ -34,8 +35,8 @@ interface EditToolbarProps {
 
 function EditToolbar(props: EditToolbarProps) {
     const { setRows, setRowModesModel } = props;
-    
-    const {id} = useParams();
+
+    const { id } = useParams();
     const shopId = id;
 
     const handleClick = () => {
@@ -69,9 +70,9 @@ function EditToolbar(props: EditToolbarProps) {
 
 export default function SeasoningCoupon() {
 
-    const {id} = useParams(); 
-    const shopId = id; 
-    
+    const { id } = useParams();
+    const shopId = id;
+
     const [rows, setRows] = useState(initialRows);
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
@@ -80,6 +81,12 @@ export default function SeasoningCoupon() {
     useEffect(() => {
         if (!initialized.current) {
             initialized.current = true;
+
+            if (shopId) {
+                if (Cookies.get(shopId.toString()) === "false" || Cookies.get(shopId.toString()) === undefined) {
+                    window.location.href = "/login";
+                }
+            }
 
             const getAllShopProducts = async () => {
                 try {
@@ -246,7 +253,7 @@ export default function SeasoningCoupon() {
             },
         },
     ];
-    
+
     return (
         <Box
             sx={{
