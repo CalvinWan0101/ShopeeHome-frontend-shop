@@ -152,6 +152,10 @@ export default function ShippingCoupons() {
             confirm("Shipping limit Rate cannot be empty.\nPlease add a new coupon with valid shipping limit rate.");
             axios.delete(baseURL + "coupon/" + newRow.id, {})
             window.location.reload();
+        } else if (newRow.shippingLimit < 0) {
+            confirm("Shipping limit Rate cannot be negative.\nPlease add a new coupon with valid shipping limit rate.");
+            axios.delete(baseURL + "coupon/" + newRow.id, {})
+            window.location.reload();
         } else {
             axios
                 .put(baseURL + "coupon/shipping/" + newRow.id, {
