@@ -204,8 +204,12 @@ export default function SeasoningCoupon() {
         const updatedRow = { ...newRow, isNew: false };
         setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
 
-        if (newRow.discount === undefined || newRow.discount === null || newRow.discount === "" || newRow.discount === 0) {
+        if (newRow.discount === undefined || newRow.discount === null || newRow.discount === "") {
             confirm("Discount Rate cannot be empty.\nPlease add a new coupon with valid discount rate.");
+            axios.delete(baseURL + "coupon/" + newRow.id, {})
+            window.location.reload();
+        } else if (newRow.discount > 1 || newRow.discount < 0 || newRow.discount === 0) {
+            confirm("Discount Rate must be between 0 and 1.\nPlease add a new coupon with valid discount rate.");
             axios.delete(baseURL + "coupon/" + newRow.id, {})
             window.location.reload();
         } else {
@@ -274,10 +278,16 @@ export default function SeasoningCoupon() {
             editable: false,
             flex: 1,
             valueGetter(params) {
+                let num = (params.value * 100 ).toString().split(".")[0] as unknown as number;
+                console.log("num");
+                console.log(num);
                 if (params.row.discount === undefined || params.row.discount === null || params.row.discount === "" || params.row.discount === 0) {
                     return "Can not be edited";
                 }
-                return `單筆訂單打${params.row.discount.toString().split(".")[1]}折`;
+                if (num % 10 === 0) {
+                    return `單筆訂單打${num / 10}折`;
+                }
+                return `單筆訂單打${num}折`;
             },
         },
         {
@@ -292,7 +302,8 @@ export default function SeasoningCoupon() {
                 if (params.value === undefined) {
                     params.value = "null";
                 }
-                return `${params.value * 100} %`;
+                console.log();
+                return `${(params.value * 100 ).toString().split(".")[0]} %`;
             },
         },
         {
