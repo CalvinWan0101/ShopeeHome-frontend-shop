@@ -109,7 +109,7 @@ function UploadImages(props: any) {
                         startIcon={<CloudUploadIcon />}
                         onClick={() => {
                             window.onclick = function () {
-                                window.location.href = "/Seller/" + props.shopId
+                                window.location.href = "/SellerProduct/" + props.shopId
                             }
                         }}
                     >
