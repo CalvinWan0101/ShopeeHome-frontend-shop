@@ -446,7 +446,7 @@ export default function SellerProduct() {
             align: "center",
             width: 150,
             type: 'string',
-            editable: true,
+            editable: false,
             renderCell: (params: any) => {
                 if (Array.isArray(params.value) && params.value.length > 0) {
                     return (
