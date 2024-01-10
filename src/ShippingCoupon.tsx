@@ -149,11 +149,11 @@ export default function ShippingCoupons() {
         setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
 
         if (newRow.shippingLimit === undefined || newRow.shippingLimit === null || newRow.shippingLimit === "" || newRow.shippingLimit === 0) {
-            confirm("Shipping limit Rate cannot be empty.\nPlease add a new coupon with valid shipping limit rate.");
+            confirm("Shipping limit cannot be empty.\nPlease add a new coupon with valid shipping limit rate.");
             axios.delete(baseURL + "coupon/" + newRow.id, {})
             window.location.reload();
         } else if (newRow.shippingLimit < 0) {
-            confirm("Shipping limit Rate cannot be negative.\nPlease add a new coupon with valid shipping limit rate.");
+            confirm("Shipping limit cannot be negative.\nPlease add a new coupon with valid shipping limit rate.");
             axios.delete(baseURL + "coupon/" + newRow.id, {})
             window.location.reload();
         } else {

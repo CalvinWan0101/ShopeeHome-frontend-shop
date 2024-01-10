@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import Box from '@mui/material/Box';
 import { baseURL } from "./APIconfig.ts";
 import Button from '@mui/material/Button';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import UploadImages from './UploadImages.tsx';
 import SaveIcon from '@mui/icons-material/Save';
@@ -212,6 +212,8 @@ export default function SellerProduct() {
         }
     });
 
+    const navigate = useNavigate()
+
     const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
         if (params.reason === GridRowEditStopReasons.rowFocusOut) {
             event.defaultMuiPrevented = true;
@@ -248,6 +250,21 @@ export default function SellerProduct() {
     const processRowUpdate = (newRow: GridRowModel) => {
         const updatedRow = { ...newRow, isNew: false };
         setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
+
+        if (newRow.originalPrice < 0) {
+            alert("Price can't be negative");
+            return updatedRow;
+        }
+
+        if (newRow.discount > 1 || newRow.discount < 0 || newRow.discount === 0) {
+            alert("Discount Rate must be between 0 and 1.\nPlease add a new coupon with valid discount rate.");
+            return updatedRow;
+        }
+
+        if (newRow.quantity < 0) {
+            alert("Quantity can't be negative");
+            return updatedRow;
+        }
 
         axios
             .put(baseURL + "product/" + newRow.id, {
@@ -467,7 +484,7 @@ export default function SellerProduct() {
             width: 120,
             headerAlign: "center",
             align: "center",
-            editable: true,
+            editable: false,
             type: 'number',
             valueFormatter(params) {
                 if (params.value === undefined) {
