@@ -12,6 +12,7 @@ import { Modal, Typography } from '@mui/material';
 import ProductsDetail from './ProductsDetail.tsx';
 import { useEffect, useRef, useState } from 'react';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import {
     GridRowsProp,
     GridRowModesModel,
@@ -295,13 +296,30 @@ export default function SellerOrder() {
                                 onClick={handleCancelClick()}
                                 component="label"
                                 variant="outlined"
+                                startIcon={<PendingActionsIcon />}
+                                style={{
+                                    border: '1px solid #1876d2',
+                                    width: '145px',
+                                    color: '#1876d2',
+                                }}>
+                                shipping
+                            </Button>
+                        </>
+                    );
+                } else if (params.formattedValue === "completed") {
+                    return (
+                        <>
+                            <Button
+                                onClick={handleCancelClick()}
+                                component="label"
+                                variant="outlined"
                                 startIcon={<DoneIcon />}
                                 style={{
                                     border: '1px solid #008000',
                                     width: '145px',
                                     color: '#008000',
                                 }}>
-                                shipping
+                                completed
                             </Button>
                         </>
                     );
