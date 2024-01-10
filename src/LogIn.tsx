@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import React, { useState } from 'react'
 import { baseURL } from "./APIconfig.ts"
 import { User } from './UserInterface.ts'
-import { Login, useLoginStore } from './LoginState'
+import { Login, useLoginStore } from './LoginState.ts'
 import { useNavigate, Link } from 'react-router-dom'
 import { Button, Paper, TextField } from '@mui/material'
 
