@@ -1,4 +1,4 @@
-# ShopeeHome-frontend-Seller
+# ShopeeHome-frontend-shop
 
 ## Install
 
