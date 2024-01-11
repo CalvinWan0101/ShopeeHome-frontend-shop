@@ -31,7 +31,7 @@ const style = {
     p: 4,
 };
 
-function UploadImages(props: any) {
+function UploadImages(props:{infoChanged: any, shopId: string , onFinish : () => void}) {
     const [images, setImages] = useState<string[]>([]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,13 +43,13 @@ function UploadImages(props: any) {
                 const file = files[i];
                 const reader = new FileReader();
 
-                reader.onload = (e: ProgressEvent<FileReader>) => {
+                reader.onload = async (e: ProgressEvent<FileReader>) => {
                     const outputstring = e.target?.result as string;
                     newImages.push(outputstring);
 
                     if (newImages.length === files.length) {
                         setImages(newImages);
-                        putImagesToDB(newImages);
+                        await putImagesToDB(newImages);
                     }
                 };
 
@@ -60,17 +60,23 @@ function UploadImages(props: any) {
 
     const putImagesToDB = async (images: string[]) => {
 
+        console.log(props);
+
+        let image = props.infoChanged.image || [];
+
         let newProduct = {
-            name: props.infoChanged.name,
-            amount: props.infoChanged.quantity,
-            price: props.infoChanged.originalPrice,
-            description: props.infoChanged.description,
-            discountRate: props.infoChanged.discount,
-            discountDate: props.infoChanged.discountDate,
+            name: props.infoChanged.name || "",
+            amount: props.infoChanged.quantity || 0,
+            price: props.infoChanged.originalPrice || 0,
+            description: props.infoChanged.description || "",
+            discountRate: props.infoChanged.discount || 0,
+            discountDate: props.infoChanged.discountDate || "",
             shopId: props.shopId,
-            images: [...props.infoChanged.image, ...images],
+            images: [image, ...images],
             isDeleted: false
         }
+
+        console.log(newProduct);
 
         axios
             .put(baseURL + "product/" + props.infoChanged.id, newProduct)
@@ -108,9 +114,10 @@ function UploadImages(props: any) {
                         variant="contained"
                         startIcon={<CloudUploadIcon />}
                         onClick={() => {
-                            window.onclick = function () {
-                                window.location.href = "/SellerProduct/" + props.shopId
-                            }
+                            props.onFinish();
+                            // window.onclick = function () {
+                            //     window.location.href = "/SellerProduct/" + props.shopId
+                            // }
                         }}
                     >
                         Save

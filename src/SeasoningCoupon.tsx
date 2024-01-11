@@ -212,7 +212,11 @@ export default function SeasoningCoupon() {
             confirm("Discount Rate must be between 0 and 1.\nPlease add a new coupon with valid discount rate.");
             axios.delete(baseURL + "coupon/" + newRow.id, {})
             window.location.reload();
-        } else {
+        } else if (newRow.deadline === undefined || newRow.deadline === null || newRow.deadline === "") {
+            confirm("Shipping discount cannot be empty.\nPlease add a new coupon with valid shipping limit rate.");
+            axios.delete(baseURL + "coupon/" + newRow.id, {})
+            window.location.reload();
+        }else {
             axios
                 .put(baseURL + "coupon/seasoning/" + newRow.id, {
                     "date": newRow.deadline,
