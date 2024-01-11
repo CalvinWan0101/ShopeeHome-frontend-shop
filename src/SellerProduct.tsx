@@ -548,7 +548,7 @@ export default function SellerProduct() {
                 aria-labelledby="upload-modal-title"
                 aria-describedby="upload-modal-description"
             >
-                <UploadImages onFinish={() => handleUploadModalClose()} infoChanged={infoChanged} shopId={shopId || ''} />
+                <UploadImages infoChanged={infoChanged} shopId={shopId} />
             </Modal>
         </Box>
     );

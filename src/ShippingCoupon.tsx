@@ -156,11 +156,7 @@ export default function ShippingCoupons() {
             confirm("Shipping limit cannot be negative.\nPlease add a new coupon with valid shipping limit rate.");
             axios.delete(baseURL + "coupon/" + newRow.id, {})
             window.location.reload();
-        } else if (newRow.deadline === undefined || newRow.deadline === null || newRow.deadline === "") {
-            confirm("Shipping discount cannot be empty.\nPlease add a new coupon with valid shipping limit rate.");
-            axios.delete(baseURL + "coupon/" + newRow.id, {})
-            window.location.reload();
-        }else {
+        } else {
             axios
                 .put(baseURL + "coupon/shipping/" + newRow.id, {
                     "date": newRow.deadline,
